@@ -167,7 +167,10 @@ class MusiCLIApp(App):
 
         # Refresh queue panel if visible
         if self._current_view == "queue":
-            self.query_one("#queue-panel", QueuePanel).update_queue(self.player.queue, self.player.queue_index)
+            queue_panel = self.query_one("#queue-panel", QueuePanel)
+            queue_panel.update_queue(
+                self.player.queue, self.player.queue_index
+            )
 
         # Sync highlights everywhere
         self._highlight_current()
@@ -209,7 +212,12 @@ class MusiCLIApp(App):
             self.all_songs = []
 
         if not self.all_songs:
-            self.notify("No audio files found in the selected folder.", title="Library", severity="warning", timeout=NOTIFICATION_TIMEOUT)
+            self.notify(
+                "No audio files found in the selected folder.",
+                title="Library",
+                severity="warning",
+                timeout=NOTIFICATION_TIMEOUT
+            )
 
         sidebar.set_libraries(
             saved_roots=self.app_state.saved_roots,
@@ -220,7 +228,10 @@ class MusiCLIApp(App):
 
         if self.all_songs:
             self.notify(
-                f"Loaded {len(self.all_songs)} tracks in {len(self.playlists)} playlists",
+                (
+                    f"Loaded {len(self.all_songs)} tracks in "
+                    f"{len(self.playlists)} playlists"
+                ),
                 title="Library Loaded",
                 severity="information",
                 timeout=NOTIFICATION_TIMEOUT,
@@ -262,7 +273,9 @@ class MusiCLIApp(App):
             queue_panel.display = True
             artist_panel.display = False
             youtube_panel.display = False
-            queue_panel.update_queue(self.player.queue, self.player.queue_index)
+            queue_panel.update_queue(
+                self.player.queue, self.player.queue_index
+            )
             return
 
         if view_id == "artists":
@@ -291,7 +304,9 @@ class MusiCLIApp(App):
         youtube_panel.display = False
 
         if view_id == "all":
-            track_list.update_tracks(self.all_songs, "All Songs", self.app_state.favorites)
+            track_list.update_tracks(
+                self.all_songs, "All Songs", self.app_state.favorites
+            )
         elif view_id == "yt-playlists":
             playlist_name = self._last_yt_playlist
             if not playlist_name:
@@ -306,10 +321,17 @@ class MusiCLIApp(App):
                 self._show_view(f"yt_playlist:{playlist_name}")
                 return
             else:
-                track_list.update_tracks([], "No YouTube Playlists", self.app_state.favorites)
+                track_list.update_tracks(
+                    [], "No YouTube Playlists", self.app_state.favorites
+                )
         elif view_id == "favorites":
-            fav_songs = [s for s in self.all_songs if self.app_state.is_favorite(s.path)]
-            track_list.update_tracks(fav_songs, "Favorites", self.app_state.favorites)
+            fav_songs = [
+                s for s in self.all_songs
+                if self.app_state.is_favorite(s.path)
+            ]
+            track_list.update_tracks(
+                fav_songs, "Favorites", self.app_state.favorites
+            )
         elif view_id.startswith("yt_playlist:"):
             playlist_name = view_id[12:]
             self._last_yt_playlist = playlist_name
@@ -328,16 +350,22 @@ class MusiCLIApp(App):
                     is_stream=s_data.get("is_stream", True),
                     thumbnail=s_data.get("thumbnail", "")
                 ))
-            track_list.update_tracks(yt_songs, f"YT: {playlist_name}", self.app_state.favorites)
+            track_list.update_tracks(
+                yt_songs, f"YT: {playlist_name}", self.app_state.favorites
+            )
         elif view_id == "recent":
             recent_paths = self.app_state.recently_played
             recent_songs = []
             all_possible_songs = self.all_songs + get_all_yt_songs()
             for p in recent_paths:
-                match = next((s for s in all_possible_songs if s.path == p), None)
+                match = next(
+                    (s for s in all_possible_songs if s.path == p), None
+                )
                 if match:
                     recent_songs.append(match)
-            track_list.update_tracks(recent_songs, "Recently Played", self.app_state.favorites)
+            track_list.update_tracks(
+                recent_songs, "Recently Played", self.app_state.favorites
+            )
         self._highlight_current()
 
     # ────────────────────────────────────────────────────────────
@@ -399,7 +427,11 @@ class MusiCLIApp(App):
             self.player.toggle_shuffle()
 
         # Repeat
-        repeat_map = {"off": RepeatMode.OFF, "all": RepeatMode.ALL, "one": RepeatMode.ONE}
+        repeat_map = {
+            "off": RepeatMode.OFF,
+            "all": RepeatMode.ALL,
+            "one": RepeatMode.ONE
+        }
         target = repeat_map.get(self.app_state.last_repeat, RepeatMode.OFF)
         while self.player.repeat_mode != target:
             self.player.cycle_repeat()
@@ -407,14 +439,21 @@ class MusiCLIApp(App):
         # Resume last song
         last_path = self.app_state.last_song_path
         if last_path:
-            song = next((s for s in self.all_songs if s.path == last_path), None)
+            song = next(
+                (s for s in self.all_songs if s.path == last_path), None
+            )
             if song:
                 # Find which playlist this song belongs to and load its queue
                 playlist_songs = [
-                    s for s in self.all_songs if s.playlist_name == song.playlist_name
+                    s for s in self.all_songs
+                    if s.playlist_name == song.playlist_name
                 ]
                 idx = next(
-                    (i for i, s in enumerate(playlist_songs) if s.path == last_path), 0
+                    (
+                        i for i, s in enumerate(playlist_songs)
+                        if s.path == last_path
+                    ),
+                    0
                 )
                 self.player.load_queue(playlist_songs, idx)
                 # Update album art panel even if not playing yet
@@ -426,7 +465,12 @@ class MusiCLIApp(App):
                     thumbnail=song.thumbnail
                 )
                 # Don't auto-play, just load - user can press space to resume
-                self.notify(f"Ready to resume: {song.display_title}", title="Playback", severity="information", timeout=NOTIFICATION_TIMEOUT)
+                self.notify(
+                    f"Ready to resume: {song.display_title}",
+                    title="Playback",
+                    severity="information",
+                    timeout=NOTIFICATION_TIMEOUT
+                )
 
     # ────────────────────────────────────────────────────────────
     #  Helpers
@@ -440,13 +484,17 @@ class MusiCLIApp(App):
         # If not found, search current track list (could be YouTube playlist)
         track_list = self.query_one("#track-list", TrackList)
         if not song:
-            song = next((s for s in track_list._songs if s.path == path), None)
+            song = next(
+                (s for s in track_list._songs if s.path == path), None
+            )
 
         if not song:
             return
 
         # Load the current view's songs as the queue
-        view_songs = track_list._songs if track_list.display else self.all_songs
+        view_songs = (
+            track_list._songs if track_list.display else self.all_songs
+        )
         if song not in view_songs:
             # If song is not in current view, maybe it's in all_songs
             if song in self.all_songs:
@@ -463,7 +511,12 @@ class MusiCLIApp(App):
             self.app_state.add_recent(path)
             self._highlight_current()
         except Exception as e:
-            self.notify(str(e), title="Playback Error", severity="error", timeout=NOTIFICATION_TIMEOUT)
+            self.notify(
+                str(e),
+                title="Playback Error",
+                severity="error",
+                timeout=NOTIFICATION_TIMEOUT
+            )
 
     def _highlight_current(self) -> None:
         """Sync all song list highlights with the currently-playing song."""
@@ -472,16 +525,26 @@ class MusiCLIApp(App):
 
         self.query_one("#track-list", TrackList).highlight_playing(path)
         self.query_one("#artist-panel", ArtistPanel).highlight_playing(path)
-        self.query_one("#youtube-panel", YoutubePanel).highlight_playing(path)
+        self.query_one(
+            "#youtube-panel", YoutubePanel
+        ).highlight_playing(path)
 
     def _get_selected_track_path(self) -> str | None:
         """Return the path of the highlighted row in the active panel."""
         if self._current_view == "youtube":
-            song = self.query_one("#youtube-panel", YoutubePanel).get_selected_song()
+            song = (
+                self.query_one(
+                    "#youtube-panel", YoutubePanel
+                ).get_selected_song()
+            )
             return song.path if song else None
 
         if self._current_view == "artists":
-            return self.query_one("#artist-panel", ArtistPanel).get_selected_path()
+            return (
+                self.query_one(
+                    "#artist-panel", ArtistPanel
+                ).get_selected_path()
+            )
 
         track_list = self.query_one("#track-list", TrackList)
         return track_list._get_selected_path()
@@ -504,7 +567,9 @@ class MusiCLIApp(App):
             pass
         self._show_view(message.view_id)
 
-    def on_sidebar_library_switch(self, message: Sidebar.LibrarySwitch) -> None:
+    def on_sidebar_library_switch(
+        self, message: Sidebar.LibrarySwitch
+    ) -> None:
         """Switch to a different saved library (root folder)."""
         self._switch_library(message.root_path)
 
@@ -520,7 +585,10 @@ class MusiCLIApp(App):
                     saved_roots=self.app_state.saved_roots,
                     current_root=self.root_path,
                 )
-                self.notify(f"Removed from library list: {message.name}", title="Library")
+                self.notify(
+                    f"Removed from library list: {message.name}",
+                    title="Library"
+                )
 
         self.push_screen(
             ConfirmModal(
@@ -531,18 +599,26 @@ class MusiCLIApp(App):
             callback=on_confirm
         )
 
-    def on_track_list_track_selected(self, message: TrackList.TrackSelected) -> None:
+    def on_track_list_track_selected(
+        self, message: TrackList.TrackSelected
+    ) -> None:
         self._play_song_by_path(message.song_path)
 
-    def on_track_list_track_remove_requested(self, message: TrackList.TrackRemoveRequested) -> None:
+    def on_track_list_track_remove_requested(
+        self, message: TrackList.TrackRemoveRequested
+    ) -> None:
         """Handle removing a track from a YouTube playlist."""
         if self._current_view.startswith("yt_playlist:"):
             playlist_name = self._current_view[12:]
 
             def on_confirm(confirmed: bool) -> None:
                 if confirmed:
-                    self.app_state.remove_from_youtube_playlist(playlist_name, message.song_path)
-                    self.notify(f"Removed from {playlist_name}", title="YouTube")
+                    self.app_state.remove_from_youtube_playlist(
+                        playlist_name, message.song_path
+                    )
+                    self.notify(
+                        f"Removed from {playlist_name}", title="YouTube"
+                    )
                     # Refresh the current view
                     self._show_view(self._current_view)
                     self._refresh_yt_panel_stars()
@@ -556,12 +632,18 @@ class MusiCLIApp(App):
                 callback=on_confirm
             )
         else:
-            self.notify("Can only remove tracks from YouTube playlists.", severity="warning")
+            self.notify(
+                "Can only remove tracks from YouTube playlists.",
+                severity="warning"
+            )
 
     def on_queue_panel_queue_track_selected(
         self, message: QueuePanel.QueueTrackSelected
     ) -> None:
-        song = next((s for s in self.player.queue if s.path == message.song_path), None)
+        song = next(
+            (s for s in self.player.queue if s.path == message.song_path),
+            None
+        )
         if song:
             self.player.play(song)
             self.app_state.add_recent(song.path)
@@ -575,7 +657,9 @@ class MusiCLIApp(App):
             self.player.move_in_queue(from_idx, to_idx)
             # Refresh queue panel
             queue_panel = self.query_one("#queue-panel", QueuePanel)
-            queue_panel.update_queue(self.player.queue, self.player.queue_index)
+            queue_panel.update_queue(
+                self.player.queue, self.player.queue_index
+            )
             # Maintain cursor position
             table = queue_panel.query_one("#queue-table", DataTable)
             table.move_cursor(row=to_idx)
@@ -588,7 +672,9 @@ class MusiCLIApp(App):
             self.player.remove_from_queue(idx)
             # Refresh queue panel
             queue_panel = self.query_one("#queue-panel", QueuePanel)
-            queue_panel.update_queue(self.player.queue, self.player.queue_index)
+            queue_panel.update_queue(
+                self.player.queue, self.player.queue_index
+            )
             # Maintain cursor position
             table = queue_panel.query_one("#queue-table", DataTable)
             new_cursor = min(idx, len(self.player.queue) - 1)
@@ -612,7 +698,8 @@ class MusiCLIApp(App):
     ) -> None:
         """Handle adding a YouTube track to a playlist."""
         def on_pick(choice: str | None) -> None:
-            if not choice: return
+            if not choice:
+                return
 
             playlist_name = choice
             if choice.startswith("new:"):
@@ -620,11 +707,15 @@ class MusiCLIApp(App):
                 self.app_state.create_youtube_playlist(playlist_name)
                 self._refresh_sidebar()
 
-            if self.app_state.add_to_youtube_playlist(playlist_name, asdict(message.song)):
+            if self.app_state.add_to_youtube_playlist(
+                playlist_name, asdict(message.song)
+            ):
                 self.notify(f"Added to {playlist_name}", title="YouTube")
                 self._refresh_yt_panel_stars()
             else:
-                self.notify(f"Already in {playlist_name}", severity="warning")
+                self.notify(
+                    f"Already in {playlist_name}", severity="warning"
+                )
 
         self.push_screen(
             YoutubePlaylistModal(
@@ -667,7 +758,9 @@ class MusiCLIApp(App):
 
     def _on_pre_play_hook(self, song: Song) -> bool:
         """Called by player before playing. Return True to intercept."""
-        if song.is_stream and ("youtube.com" in song.path or "youtu.be" in song.path):
+        if song.is_stream and (
+            "youtube.com" in song.path or "youtu.be" in song.path
+        ):
             self._play_youtube_song(song)
             return True
         return False
@@ -677,7 +770,11 @@ class MusiCLIApp(App):
         # Add to recent history using the original YouTube path/URL
         self.app_state.add_recent(song.path)
 
-        self.notify(f"Extracting stream for: {song.display_title}...", title="YouTube", timeout=2)
+        self.notify(
+            f"Extracting stream for: {song.display_title}...",
+            title="YouTube",
+            timeout=2
+        )
 
         def _extract_and_play():
             try:
@@ -686,18 +783,26 @@ class MusiCLIApp(App):
                     'format': 'ba/b',
                     'quiet': True,
                     'no_warnings': True,
-                    'extractor_args': {'youtube': {'player_client': ['android_vr', 'ios', 'android', 'mweb', 'web']}}
+                    'extractor_args': {
+                        'youtube': {
+                            'player_client': [
+                                'android_vr', 'ios', 'android', 'mweb', 'web'
+                            ]
+                        }
+                    }
                 }
 
                 if YOUTUBE_COOKIES_FROM_BROWSER:
-                    ydl_opts['cookiesfrombrowser'] = (YOUTUBE_COOKIES_FROM_BROWSER,)
+                    ydl_opts['cookiesfrombrowser'] = (
+                        YOUTUBE_COOKIES_FROM_BROWSER,
+                    )
                 elif YOUTUBE_COOKIES_FILE:
                     ydl_opts['cookiefile'] = YOUTUBE_COOKIES_FILE
 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(song.path, download=False)
 
-                    # Clone the song to avoid corrupting the original path in the playlist
+                    # Clone the song to avoid corrupting the original path
                     new_song = Song(
                         path=info['url'],
                         filename=song.filename,
@@ -715,15 +820,28 @@ class MusiCLIApp(App):
                 def _play():
                     self.player.play(new_song, force=True)
                     self._highlight_current()
-                    self.notify(f"Streaming: {new_song.display_title}", title="YouTube", severity="information", timeout=NOTIFICATION_TIMEOUT)
+                    self.notify(
+                        f"Streaming: {new_song.display_title}",
+                        title="YouTube",
+                        severity="information",
+                        timeout=NOTIFICATION_TIMEOUT
+                    )
 
                 self.app.call_from_thread(_play)
 
             except Exception as e:
                 err_msg = str(e)
                 if "confirm you're not a bot" in err_msg.lower():
-                    err_msg = "YouTube bot detection triggered. Try setting YOUTUBE_COOKIES_FROM_BROWSER in .env"
-                self.app.call_from_thread(self.notify, f"Streaming failed: {err_msg}", title="YouTube", severity="error")
+                    err_msg = (
+                        "YouTube bot detection triggered. Try setting "
+                        "YOUTUBE_COOKIES_FROM_BROWSER in .env"
+                    )
+                self.app.call_from_thread(
+                    self.notify,
+                    f"Streaming failed: {err_msg}",
+                    title="YouTube",
+                    severity="error"
+                )
 
         thread = threading.Thread(target=_extract_and_play)
         thread.daemon = True
@@ -755,28 +873,48 @@ class MusiCLIApp(App):
             song_data = asdict(song)
             song_data["path"] = str(local_file)
             song_data["is_stream"] = False
-            if self.app_state.add_to_youtube_playlist(playlist_name, song_data):
-                self.notify(f"Added local to {playlist_name}", title="YouTube")
+            if self.app_state.add_to_youtube_playlist(
+                playlist_name, song_data
+            ):
+                self.notify(
+                    f"Added local to {playlist_name}", title="YouTube"
+                )
                 self._refresh_yt_panel_stars()
             else:
-                self.notify(f"Already in {playlist_name}", severity="warning")
+                self.notify(
+                    f"Already in {playlist_name}", severity="warning"
+                )
             return
 
-        self.notify(f"Downloading to {playlist_name}...", title="YouTube", timeout=5)
+        self.notify(
+            f"Downloading to {playlist_name}...",
+            title="YouTube",
+            timeout=5
+        )
 
         def _run_download():
             try:
                 import yt_dlp
                 ydl_opts = {
                     'format': 'bestaudio/best',
-                    'outtmpl': str(YT_DOWNLOADS_DIR / f'{video_id}.%(ext)s'),
+                    'outtmpl': str(
+                        YT_DOWNLOADS_DIR / f'{video_id}.%(ext)s'
+                    ),
                     'quiet': True,
                     'no_warnings': True,
-                    'extractor_args': {'youtube': {'player_client': ['android_vr', 'ios', 'android', 'mweb', 'web']}}
+                    'extractor_args': {
+                        'youtube': {
+                            'player_client': [
+                                'android_vr', 'ios', 'android', 'mweb', 'web'
+                            ]
+                        }
+                    }
                 }
 
                 if YOUTUBE_COOKIES_FROM_BROWSER:
-                    ydl_opts['cookiesfrombrowser'] = (YOUTUBE_COOKIES_FROM_BROWSER,)
+                    ydl_opts['cookiesfrombrowser'] = (
+                        YOUTUBE_COOKIES_FROM_BROWSER,
+                    )
                 elif YOUTUBE_COOKIES_FILE:
                     ydl_opts['cookiefile'] = YOUTUBE_COOKIES_FILE
 
@@ -792,8 +930,13 @@ class MusiCLIApp(App):
                         song_data["thumbnail"] = info['thumbnail']
 
                 def _done():
-                    if self.app_state.add_to_youtube_playlist(playlist_name, song_data):
-                        self.notify(f"Downloaded & Added to {playlist_name}", title="YouTube")
+                    if self.app_state.add_to_youtube_playlist(
+                        playlist_name, song_data
+                    ):
+                        self.notify(
+                            f"Downloaded & Added to {playlist_name}",
+                            title="YouTube"
+                        )
                         self._refresh_yt_panel_stars()
                     else:
                         # If somehow added while downloading
@@ -801,7 +944,11 @@ class MusiCLIApp(App):
 
                 self.app.call_from_thread(_done)
             except Exception as e:
-                self.app.call_from_thread(self.notify, f"Download failed: {str(e)}", severity="error")
+                self.app.call_from_thread(
+                    self.notify,
+                    f"Download failed: {str(e)}",
+                    severity="error"
+                )
 
         threading.Thread(target=_run_download, daemon=True).start()
 
@@ -810,7 +957,8 @@ class MusiCLIApp(App):
     ) -> None:
         """Handle adding a YouTube track to a playlist."""
         def on_pick(choice: str | None) -> None:
-            if not choice: return
+            if not choice:
+                return
 
             playlist_name = choice
             if choice.startswith("new:"):
@@ -829,29 +977,44 @@ class MusiCLIApp(App):
             callback=on_pick
         )
 
-    def on_sidebar_youtube_playlist_selected(self, message: Sidebar.YoutubePlaylistSelected) -> None:
+    def on_sidebar_youtube_playlist_selected(
+        self, message: Sidebar.YoutubePlaylistSelected
+    ) -> None:
         self._show_view(f"yt_playlist:{message.name}")
 
-    def on_sidebar_new_youtube_playlist_request(self, message: Sidebar.NewYoutubePlaylistRequest) -> None:
+    def on_sidebar_new_youtube_playlist_request(
+        self, message: Sidebar.NewYoutubePlaylistRequest
+    ) -> None:
         def on_name(name: str | None) -> None:
             if name:
                 if self.app_state.create_youtube_playlist(name):
-                    self.notify(f"Created playlist: {name}", title="YouTube")
+                    self.notify(
+                        f"Created playlist: {name}", title="YouTube"
+                    )
                     self._refresh_sidebar()
                 else:
-                    self.notify(f"Playlist already exists: {name}", severity="error")
+                    self.notify(
+                        f"Playlist already exists: {name}",
+                        severity="error"
+                    )
 
         self.push_screen(NewYoutubePlaylistModal(), callback=on_name)
 
-    def on_sidebar_youtube_playlist_remove_request(self, message: Sidebar.YoutubePlaylistRemoveRequest) -> None:
+    def on_sidebar_youtube_playlist_remove_request(
+        self, message: Sidebar.YoutubePlaylistRemoveRequest
+    ) -> None:
         if message.name == "Starred":
-            self.notify("Cannot delete 'Starred' playlist", severity="warning")
+            self.notify(
+                "Cannot delete 'Starred' playlist", severity="warning"
+            )
             return
 
         def on_confirm(confirmed: bool) -> None:
             if confirmed:
                 self.app_state.delete_youtube_playlist(message.name)
-                self.notify(f"Deleted playlist: {message.name}", title="YouTube")
+                self.notify(
+                    f"Deleted playlist: {message.name}", title="YouTube"
+                )
                 self._refresh_sidebar()
                 if self._current_view == f"yt_playlist:{message.name}":
                     self._show_view("youtube")
@@ -865,7 +1028,9 @@ class MusiCLIApp(App):
             callback=on_confirm
         )
 
-    def on_sidebar_add_library_request(self, message: Sidebar.AddLibraryRequest) -> None:
+    def on_sidebar_add_library_request(
+        self, message: Sidebar.AddLibraryRequest
+    ) -> None:
         """Open the Add Library modal when the sidebar button is clicked."""
         self._open_add_library_modal()
 
@@ -876,7 +1041,12 @@ class MusiCLIApp(App):
 
         from pathlib import Path as P
         if not P(new_root).exists():
-            self.notify(f"Folder not found: {new_root}", title="Library Error", severity="warning", timeout=NOTIFICATION_TIMEOUT)
+            self.notify(
+                f"Folder not found: {new_root}",
+                title="Library Error",
+                severity="warning",
+                timeout=NOTIFICATION_TIMEOUT
+            )
             self.app_state.remove_saved_root(new_root)
             sidebar = self.query_one("#sidebar", Sidebar)
             sidebar.set_libraries(
@@ -893,7 +1063,12 @@ class MusiCLIApp(App):
         self.root_path = new_root
         self._scan_library()
         name = P(new_root).name
-        self.notify(f"Switched to library: {name}", title="Library Switch", severity="information", timeout=NOTIFICATION_TIMEOUT)
+        self.notify(
+            f"Switched to library: {name}",
+            title="Library Switch",
+            severity="information",
+            timeout=NOTIFICATION_TIMEOUT
+        )
 
     # ────────────────────────────────────────────────────────────
     #  Actions (keyboard bindings)
@@ -943,12 +1118,22 @@ class MusiCLIApp(App):
     def action_toggle_shuffle(self) -> None:
         self.player.toggle_shuffle()
         state = "ON" if self.player.shuffle else "OFF"
-        self.notify(f"Shuffle: {state}", title="Playback", severity="information", timeout=NOTIFICATION_TIMEOUT)
+        self.notify(
+            f"Shuffle: {state}",
+            title="Playback",
+            severity="information",
+            timeout=NOTIFICATION_TIMEOUT
+        )
 
     def action_cycle_repeat(self) -> None:
         self.player.cycle_repeat()
         mode = self.player.repeat_mode.value.upper()
-        self.notify(f"Repeat: {mode}", title="Playback", severity="information", timeout=NOTIFICATION_TIMEOUT)
+        self.notify(
+            f"Repeat: {mode}",
+            title="Playback",
+            severity="information",
+            timeout=NOTIFICATION_TIMEOUT
+        )
 
     def action_seek_fwd(self) -> None:
         self.player.seek_relative(SEEK_STEP)
@@ -991,7 +1176,9 @@ class MusiCLIApp(App):
         if path:
             if self._current_view.startswith("yt_playlist:"):
                 track_list = self.query_one("#track-list", TrackList)
-                song = next((s for s in track_list._songs if s.path == path), None)
+                song = next(
+                    (s for s in track_list._songs if s.path == path), None
+                )
                 if song:
                     self.on_youtube_panel_youtube_track_add_to_playlist(
                         YoutubePanel.YoutubeTrackAddToPlaylist(song)
@@ -999,12 +1186,24 @@ class MusiCLIApp(App):
                 return
 
             is_fav = self.app_state.toggle_favorite(path)
-            song = next((s for s in self.all_songs if s.path == path), None)
+            song = next(
+                (s for s in self.all_songs if s.path == path), None
+            )
             name = song.display_title if song else "Track"
             if is_fav:
-                self.notify(f"Added to favorites: {name}", title="Favorites", severity="information", timeout=NOTIFICATION_TIMEOUT)
+                self.notify(
+                    f"Added to favorites: {name}",
+                    title="Favorites",
+                    severity="information",
+                    timeout=NOTIFICATION_TIMEOUT
+                )
             else:
-                self.notify(f"Removed from favorites: {name}", title="Favorites", severity="information", timeout=NOTIFICATION_TIMEOUT)
+                self.notify(
+                    f"Removed from favorites: {name}",
+                    title="Favorites",
+                    severity="information",
+                    timeout=NOTIFICATION_TIMEOUT
+                )
             # Refresh view
             track_list = self.query_one("#track-list", TrackList)
             track_list.set_favorites(self.app_state.favorites)
@@ -1027,23 +1226,39 @@ class MusiCLIApp(App):
         path = self._get_selected_track_path()
         if path:
             # Check local library first
-            song = next((s for s in self.all_songs if s.path == path), None)
+            song = next(
+                (s for s in self.all_songs if s.path == path), None
+            )
 
-            # If not in local library, check current track list (could be YT playlist or Recent)
+            # If not in local library, check current track list
             if not song:
                 track_list = self.query_one("#track-list", TrackList)
-                song = next((s for s in track_list._songs if s.path == path), None)
+                song = next(
+                    (s for s in track_list._songs if s.path == path), None
+                )
 
             # Also check YouTube panel search results
             if not song and self._current_view == "youtube":
                 yt_panel = self.query_one("#youtube-panel", YoutubePanel)
-                song = next((s for s in yt_panel._results if s.path == path), None)
+                song = next(
+                    (s for s in yt_panel._results if s.path == path), None
+                )
 
             if song:
                 self.player.add_to_queue(song)
-                self.notify(f"Added to queue: {song.display_title}", title="Queue", severity="information", timeout=NOTIFICATION_TIMEOUT)
+                self.notify(
+                    f"Added to queue: {song.display_title}",
+                    title="Queue",
+                    severity="information",
+                    timeout=NOTIFICATION_TIMEOUT
+                )
                 if self._current_view == "queue":
-                    self.query_one("#queue-panel", QueuePanel).update_queue(self.player.queue, self.player.queue_index)
+                    queue_panel = self.query_one(
+                        "#queue-panel", QueuePanel
+                    )
+                    queue_panel.update_queue(
+                        self.player.queue, self.player.queue_index
+                    )
 
     def action_sort_title(self) -> None:
         self.query_one("#track-list", TrackList).sort_by("title")
@@ -1075,7 +1290,10 @@ class MusiCLIApp(App):
         tabs = self.query_one("#nav-tabs", Tabs)
         if tabs.active_tab:
             # Simple list of main tab IDs
-            ids = ["all", "artists", "youtube", "yt-playlists", "favorites", "recent", "queue"]
+            ids = [
+                "all", "artists", "youtube", "yt-playlists",
+                "favorites", "recent", "queue"
+            ]
             try:
                 idx = ids.index(tabs.active_tab.id)
                 next_id = ids[(idx + 1) % len(ids)]
@@ -1089,7 +1307,10 @@ class MusiCLIApp(App):
         """Switch to the previous available tab."""
         tabs = self.query_one("#nav-tabs", Tabs)
         if tabs.active_tab:
-            ids = ["all", "artists", "youtube", "yt-playlists", "favorites", "recent", "queue"]
+            ids = [
+                "all", "artists", "youtube", "yt-playlists",
+                "favorites", "recent", "queue"
+            ]
             try:
                 idx = ids.index(tabs.active_tab.id)
                 prev_id = ids[(idx - 1) % len(ids)]
