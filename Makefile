@@ -37,22 +37,22 @@ help: ## Show this help message
 	@printf "\n"
 
 # ──────────────────────────────────────────────────────────────────
-#  Installation
+#  Project Setup (Working on MusiCLI)
 # ──────────────────────────────────────────────────────────────────
 
-.PHONY: install
-install: ## Install MusiCLI (user-facing)
-	@printf "$(GREEN)▸ Installing MusiCLI…$(RESET)\n"
-	$(PIP) install .
+.PHONY: setup
+setup: ## Standard development setup (editable install)
+	@printf "$(GREEN)▸ Setting up MusiCLI for development…$(RESET)\n"
+	$(PIP) install -e .
 
 .PHONY: dev
-dev: ## Install in editable mode with dev dependencies
-	@printf "$(GREEN)▸ Installing MusiCLI in dev mode…$(RESET)\n"
+dev: ## Setup with full development tools (ruff, pytest, etc.)
+	@printf "$(GREEN)▸ Setting up MusiCLI with dev tools…$(RESET)\n"
 	$(PIP) install -e ".[dev]"
 
 .PHONY: deps
-deps: ## Install only runtime dependencies (no package install)
-	@printf "$(GREEN)▸ Installing dependencies from requirements.txt…$(RESET)\n"
+deps: ## Install only runtime dependencies
+	@printf "$(GREEN)▸ Installing dependencies…$(RESET)\n"
 	$(PIP) install -r requirements.txt
 
 # ──────────────────────────────────────────────────────────────────

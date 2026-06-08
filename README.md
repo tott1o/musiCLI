@@ -31,8 +31,8 @@
 - [Features](#-features)
 - [Screenshots](#-screenshots)
 - [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
+- [Working on MusiCLI](#-working-on-musicli)
+- [Getting Started](#-getting-started)
 - [Usage Guide](#-usage-guide)
 - [Keyboard Controls](#-keyboard-controls)
 - [Configuration](#-configuration)
@@ -139,12 +139,12 @@ Add a new music folder by entering its absolute path. Supports multiple librarie
 
 ## 📋 Prerequisites
 
-Before installing MusiCLI, make sure you have:
+Before setting up MusiCLI, make sure you have:
 
 | Requirement | Version | Purpose |
 |:---|:---|:---|
 | **Python** | 3.10 or higher | Runtime |
-| **pip** | Latest | Package installation |
+| **pip** | Latest | Package management |
 | **VLC Media Player** | Any recent version | YouTube streaming & broad codec support |
 | **Modern Terminal** | — | Windows Terminal, Alacritty, Kitty, iTerm2, etc. |
 
@@ -181,90 +181,107 @@ brew install --cask vlc
 
 ---
 
-## 🚀 Installation
+## 🛠️ Working on MusiCLI
 
-### Option A — pip install (Recommended)
+### 1. Prerequisites
 
-This installs MusiCLI as a proper Python package with a `musicli` command available globally.
+Before starting, ensure you have:
+- **Python 3.10+**
+- **pip**
+- **VLC Media Player** (Required for streaming)
+
+### 2. Setup
+
+<details>
+<summary><strong>🪟 Windows</strong></summary>
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/tott1o/musiCLI.git
 cd musiCLI
 
-# 2. (Optional) Create a virtual environment
+# 2. Create a virtual environment
 python -m venv .venv
 
-# Activate — Linux/macOS:
-source .venv/bin/activate
-# Activate — Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# Activate — Windows (CMD):
-.venv\Scripts\activate.bat
+# 3. Activate the environment (CRITICAL)
+.venv\Scripts\activate
 
-# 3. Install the package
-pip install .
-
-# 4. Launch!
-musicli "C:\Users\YourName\Music"
+# 4. Install in editable mode
+pip install -e .
 ```
+</details>
 
-### Option B — Development install
+<details>
+<summary><strong>🐧 Linux / 🍎 macOS</strong></summary>
 
-For contributors or if you want to modify the source code:
+```bash
+# 1. Clone the repository
+git clone https://github.com/tott1o/musiCLI.git
+cd musiCLI
+
+# 2. Create a virtual environment
+python -m venv .venv
+
+# 3. Activate the environment (CRITICAL)
+source .venv/bin/activate
+
+# 4. Install in editable mode
+pip install -e .
+```
+</details>
+
+<details>
+<summary><strong>🐧 Linux / 🍎 macOS (Using Make)</strong></summary>
+
+If you prefer using `make` shortcuts:
 
 ```bash
 git clone https://github.com/tott1o/musiCLI.git
 cd musiCLI
 
-python -m venv .venv
-source .venv/bin/activate       # or .venv\Scripts\Activate.ps1 on Windows
-
-# Install in editable mode with dev tools (ruff, pytest)
-pip install -e ".[dev]"
+# Setup virtual environment and install in editable mode
+# (Make sure your environment is active first!)
+make setup
 
 # Run
-musicli ~/Music
+make run
 ```
+</details>
 
-### Option C — Direct run (no install)
-
-If you just want to try it out quickly without installing:
+### 3. Running
 
 ```bash
-git clone https://github.com/tott1o/musiCLI.git
-cd musiCLI
-
-# Install dependencies only
-pip install -r requirements.txt
-
-# Run directly
-python -m musicli "C:\Users\YourName\Music"
-```
-
-### Using Make (Linux/macOS)
-
-```bash
-make install    # Standard install
-make dev        # Development install (editable + dev tools)
-make run        # Run the app
-make help       # See all available commands
+# Launch the application
+musicli
 ```
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Getting Started
+
+<details open>
+<summary><strong>🪟 Windows</strong></summary>
 
 ```bash
 # Start with a music folder
-musicli ~/Music
-
-# Or on Windows
 musicli "C:\Users\YourName\Music"
 
 # Resume your last session (no arguments needed!)
 musicli
 ```
+</details>
+
+<details open>
+<summary><strong>🐧 Linux / 🍎 macOS</strong></summary>
+
+```bash
+# Start with a music folder
+musicli ~/Music
+
+# Resume your last session (no arguments needed!)
+musicli
+```
+</details>
 
 Once launched, you'll see the main interface with your songs listed. Use the **keyboard shortcuts** below to navigate, play music, and explore features.
 
@@ -526,17 +543,16 @@ YouTube has increased bot detection. To fix this:
 </details>
 
 <details>
-<summary><strong>📦 Import errors after installation?</strong></summary>
+<summary><strong>📦 Import errors?</strong></summary>
 
 - Make sure you installed the package correctly:
   ```bash
-  pip install .          # standard install
-  pip install -e ".[dev]" # development install
+  pip install -e .
   ```
 - If using a virtual environment, make sure it's activated
 - Try reinstalling:
   ```bash
-  pip uninstall musicli && pip install .
+  pip uninstall musicli && pip install -e .
   ```
 </details>
 
