@@ -449,9 +449,6 @@ musiCLI/
 │   └── test_models.py
 ├── .env.example                # Environment variable template
 ├── .gitignore
-├── CHANGELOG.md                # Release history
-├── CODE_OF_CONDUCT.md          # Community standards
-├── CONTRIBUTING.md             # Contributor guide
 ├── LICENSE                     # MIT License
 ├── Makefile                    # Dev shortcuts
 ├── pyproject.toml              # Build config & dependencies (PEP 621)
