@@ -4,20 +4,24 @@ Add Library modal – pick a new root folder.
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Optional
 
 import pyperclip
 from textual.app import ComposeResult
-from textual.containers import Vertical, Horizontal
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Input, Static, Button
+from textual.widgets import Button, Input, Static
 
-from ..config import NOTIFICATION_TIMEOUT
 from ..theme import (
-    ACCENT, BG_PRIMARY, BG_ELEVATED, BG_SURFACE, BG_BUTTON, BORDER,
-    TEXT_PRIMARY, TEXT_SECONDARY,
+    ACCENT,
+    BG_BUTTON,
+    BG_ELEVATED,
+    BG_PRIMARY,
+    BG_SURFACE,
+    BORDER,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
 )
 
 

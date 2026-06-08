@@ -16,20 +16,18 @@ Design decisions
 from __future__ import annotations
 
 import io
+import logging
 import os
 import re
-import logging
-from typing import Optional
 
+import syncedlyrics
+from PIL import Image, ImageOps
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Static
 from tinytag import TinyTag
-from PIL import Image, ImageOps
-import syncedlyrics
-import logging
 
 # Suppress loud traceback and connection logs from underlying libraries
 logging.getLogger("textual_image").setLevel(logging.CRITICAL)
@@ -38,11 +36,20 @@ logging.getLogger("syncedlyrics").setLevel(logging.CRITICAL)
 
 from textual_image.widget import Image as TermImageWidget
 
-from ..utils import resolve_resource, truncate
 from ..theme import (
-    ACCENT, BG_DEEPEST, BG_PRIMARY, BG_ELEVATED, BORDER, BORDER_SUBTLE,
-    TEXT_PRIMARY, TEXT_SECONDARY, TEXT_HOVER, TEXT_DIMMER, TEXT_LYRICS,
+    ACCENT,
+    BG_DEEPEST,
+    BG_ELEVATED,
+    BG_PRIMARY,
+    BORDER,
+    BORDER_SUBTLE,
+    TEXT_DIMMER,
+    TEXT_HOVER,
+    TEXT_LYRICS,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
 )
+from ..utils import resolve_resource, truncate
 
 
 class AlbumArtPanel(Vertical):
@@ -201,7 +208,7 @@ class AlbumArtPanel(Vertical):
 
     def update_song(
         self,
-        song_path: Optional[str],
+        song_path: str | None,
         title:     str = "",
         artist:    str = "",
         thumbnail: str = "",
@@ -259,7 +266,7 @@ class AlbumArtPanel(Vertical):
     def _render_art(self, song_path: str, thumbnail_url: str = "") -> None:
         """Load and render album art in a background thread."""
         widget = self.query_one("#album-art-img", TermImageWidget)
-        
+
         try:
             pil_img = None
 
@@ -282,13 +289,13 @@ class AlbumArtPanel(Vertical):
                     if not song and self.app.player.current_song:
                         if self.app.player.current_song.path == song_path:
                             song = self.app.player.current_song
-                    
+
                     if song and song.thumbnail:
                         import requests
                         resp = requests.get(song.thumbnail, timeout=5)
                         if resp.status_code == 200:
                             pil_img = Image.open(io.BytesIO(resp.content))
-            
+
             # Case 3: Local File
             if not pil_img and not song_path.startswith("http") and os.path.exists(song_path):
                 tag = TinyTag.get(song_path, image=True)
@@ -304,7 +311,7 @@ class AlbumArtPanel(Vertical):
 
             if pil_img:
                 pil_img = _prepare_image(pil_img)
-                
+
                 # --- Strict 1:1 Center Crop Logic ---
                 width, height = pil_img.size
                 size = min(width, height)
@@ -312,12 +319,12 @@ class AlbumArtPanel(Vertical):
                 top = (height - size) // 2
                 right = (width + size) // 2
                 bottom = (height + size) // 2
-                
+
                 final_img = pil_img.crop((left, top, right, bottom))
-                
+
                 def _update():
                     widget.image = final_img
-                
+
                 self.app.call_from_thread(_update)
             else:
                 self.app.call_from_thread(setattr, widget, "image", None)
@@ -348,7 +355,7 @@ class AlbumArtPanel(Vertical):
             # We use a short-circuit if it takes too long (simulated via thread safety)
             # and rely on the library's internal behavior while catching all networking errors
             lrc = syncedlyrics.search(query)
-            
+
             if not lrc:
                 self.app.call_from_thread(set_lyrics, "[dim]No lyrics found.[/dim]")
                 return

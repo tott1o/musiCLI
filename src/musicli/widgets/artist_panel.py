@@ -4,20 +4,17 @@ Artist panel – browse library by artist.
 
 from __future__ import annotations
 
-from typing import List, Dict, Set, Optional
 from collections import defaultdict
 
-from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical, Horizontal
+from textual.containers import Horizontal, Vertical
 from textual.message import Message
-from textual.widgets import DataTable, Static, Button
-
-from ..utils import truncate
+from textual.widgets import DataTable, Static
 
 from ..models import Song
-from ..theme import ACCENT, BG_PRIMARY, BG_ELEVATED, BG_HOVER, BORDER, TEXT_SECONDARY
+from ..theme import ACCENT, BG_ELEVATED, BG_HOVER, BG_PRIMARY, BORDER, TEXT_SECONDARY
+from ..utils import truncate
 
 
 class ArtistPanel(Vertical):
@@ -86,10 +83,10 @@ class ArtistPanel(Vertical):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self._all_songs: List[Song] = []
-        self._artists: List[str] = []
-        self._current_artist: Optional[str] = None
-        self._current_playing_path: Optional[str] = None
+        self._all_songs: list[Song] = []
+        self._artists: list[str] = []
+        self._current_artist: str | None = None
+        self._current_playing_path: str | None = None
 
     def compose(self) -> ComposeResult:
         yield Static("Artists", id="artist-header")
@@ -128,7 +125,7 @@ class ArtistPanel(Vertical):
         else:
             self.query_one("#artist-songs-table", DataTable).action_cursor_up()
 
-    def get_selected_path(self) -> Optional[str]:
+    def get_selected_path(self) -> str | None:
         """Return the path of the currently selected song in the songs table."""
         table = self.query_one("#artist-songs-table", DataTable)
         try:
@@ -146,30 +143,30 @@ class ArtistPanel(Vertical):
         """Let the app handle the 'a' key."""
         pass
 
-    def update_artists(self, songs: List[Song]) -> None:
+    def update_artists(self, songs: list[Song]) -> None:
         """Group songs by artist and refresh the artist list."""
         self._all_songs = songs
         counts = defaultdict(int)
         for song in songs:
             counts[song.display_artist] += 1
-        
+
         self._artists = sorted(counts.keys(), key=lambda x: x.lower())
-        
+
         table = self.query_one("#artist-table", DataTable)
         table.clear()
-        
+
         for artist in self._artists:
             table.add_row(
                 truncate(artist, 30),
                 str(counts[artist]),
                 key=artist
             )
-        
+
         if self._artists and self._current_artist is None:
             # Select first artist by default if none selected
             self._update_song_list(self._artists[0])
 
-    def highlight_playing(self, song_path: Optional[str]) -> None:
+    def highlight_playing(self, song_path: str | None) -> None:
         """Mark the currently-playing track in the songs list."""
         if self._current_playing_path == song_path:
             return
@@ -181,12 +178,12 @@ class ArtistPanel(Vertical):
         """Update the song list for the selected artist."""
         self._current_artist = artist_name
         songs = [s for s in self._all_songs if s.display_artist == artist_name]
-        
+
         label = self.query_one("#songs-label", Static)
         label.update(f"  SONGS - {artist_name}")
-        
+
         table = self.query_one("#artist-songs-table", DataTable)
-        
+
         # Save state
         cursor_coord = table.cursor_coordinate
         scroll_x, scroll_y = table.scroll_offset
@@ -196,7 +193,7 @@ class ArtistPanel(Vertical):
             status = " "
             title = truncate(song.display_title, 50)
             album = truncate(song.display_album, 35)
-            
+
             if song.path == self._current_playing_path:
                 status = f"[bold {ACCENT}]▶[/]"
                 title = f"[bold {ACCENT}]{title}[/]"
@@ -208,7 +205,7 @@ class ArtistPanel(Vertical):
                 song.duration_str,
                 key=f"as_{idx}_{song.path}"
             )
-        
+
         # Restore state
         if cursor_coord:
             row = min(cursor_coord.row, len(songs) - 1)

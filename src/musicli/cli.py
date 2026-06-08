@@ -15,7 +15,7 @@ def main():
     """Main entry point for the MusiCLI application."""
     # Initialize state to check for last-saved root
     state = AppState()
-    
+
     # Get root path from command line or use last saved root
     root_path = ""
     if len(sys.argv) > 1:
@@ -32,7 +32,7 @@ def main():
     else:
         # No arguments – use the last-saved root folder
         root_path = state.last_root
-    
+
     # Launch the app
     app = MusiCLIApp(root_path=root_path)
     try:

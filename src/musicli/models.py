@@ -6,7 +6,6 @@ no framework-specific logic so they can be reused anywhere.
 """
 
 from dataclasses import dataclass, field
-from typing import List
 
 
 @dataclass
@@ -66,7 +65,7 @@ class Playlist:
 
     name: str
     path: str
-    songs: List[Song] = field(default_factory=list)
+    songs: list[Song] = field(default_factory=list)
 
     @property
     def song_count(self) -> int:

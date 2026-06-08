@@ -4,17 +4,23 @@ Search modal – find songs by title, artist, or album.
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from textual.app import ComposeResult
-from textual.containers import Vertical, Horizontal
+from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Input, OptionList, Static
 from textual.widgets.option_list import Option
 
 from ..theme import (
-    ACCENT, BG_PRIMARY, BG_ELEVATED, BG_SURFACE, BG_HOVER, BORDER,
-    TEXT_PRIMARY, TEXT_SECONDARY,
+    ACCENT,
+    BG_ELEVATED,
+    BG_HOVER,
+    BG_PRIMARY,
+    BG_SURFACE,
+    BORDER,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
 )
 
 if TYPE_CHECKING:
@@ -74,10 +80,10 @@ class SearchModal(ModalScreen[Optional[str]]):
     }}
     """
 
-    def __init__(self, all_songs: List[Song], **kwargs) -> None:
+    def __init__(self, all_songs: list[Song], **kwargs) -> None:
         super().__init__(**kwargs)
         self.all_songs = all_songs
-        self._results: List[Song] = []
+        self._results: list[Song] = []
 
     def compose(self) -> ComposeResult:
         with Vertical(id="search-container"):

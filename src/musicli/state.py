@@ -7,20 +7,18 @@ can resume where you left off.
 """
 
 import json
-from pathlib import Path
-from typing import Set, List
 
-from .config import STATE_DIR, STATE_FILE, MAX_RECENT
+from .config import MAX_RECENT, STATE_DIR, STATE_FILE
 
 
 class AppState:
     """Read / write player state to disk."""
 
     def __init__(self) -> None:
-        self._favorites: Set[str] = set()        # song paths
-        self._youtube_playlists: dict[str, List[dict]] = {"Starred": []} # playlist name -> list of song info
-        self._recently_played: List[str] = []    # song paths, newest last
-        self._saved_roots: List[dict] = []       # [{"name": ..., "path": ...}]
+        self._favorites: set[str] = set()        # song paths
+        self._youtube_playlists: dict[str, list[dict]] = {"Starred": []} # playlist name -> list of song info
+        self._recently_played: list[str] = []    # song paths, newest last
+        self._saved_roots: list[dict] = []       # [{"name": ..., "path": ...}]
         self._last_song_path: str = ""
         self._last_position: float = 0.0
         self._last_volume: float = 0.7
@@ -97,7 +95,7 @@ class AppState:
         return path in self._favorites
 
     @property
-    def favorites(self) -> Set[str]:
+    def favorites(self) -> set[str]:
         return self._favorites
 
     # ── YouTube Playlists ───────────────────────────────────────
@@ -120,12 +118,12 @@ class AppState:
         """Add a song to a specific YouTube playlist."""
         if playlist_name not in self._youtube_playlists:
             return False
-        
+
         path = song_data.get("path")
         # Avoid duplicates in same playlist
         if any(s.get("path") == path for s in self._youtube_playlists[playlist_name]):
             return False
-            
+
         # Update playlist_name so it displays correctly when played from this playlist
         song_data["playlist_name"] = playlist_name
         self._youtube_playlists[playlist_name].append(song_data)
@@ -145,7 +143,7 @@ class AppState:
         return any(star.get("path") == path for star in self._youtube_playlists.get("Starred", []))
 
     @property
-    def youtube_playlists(self) -> dict[str, List[dict]]:
+    def youtube_playlists(self) -> dict[str, list[dict]]:
         return self._youtube_playlists
 
     # ── Recently played ─────────────────────────────────────────
@@ -160,7 +158,7 @@ class AppState:
         self.save()
 
     @property
-    def recently_played(self) -> List[str]:
+    def recently_played(self) -> list[str]:
         """Most-recent first."""
         return list(reversed(self._recently_played))
 
@@ -260,6 +258,6 @@ class AppState:
             self.save()
 
     @property
-    def saved_roots(self) -> List[dict]:
+    def saved_roots(self) -> list[dict]:
         """Return list of {name, path} dicts, most-recent last."""
         return list(self._saved_roots)

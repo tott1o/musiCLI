@@ -4,7 +4,6 @@ Utility helpers for MusiCLI.
 Small, pure functions that don't depend on any framework.
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -90,16 +89,16 @@ def modern_bar(value: float, width: int = 20) -> str:
     value = max(0.0, min(1.0, value))
     filled_len = int(value * width)
     empty_len = width - filled_len
-    
+
     # Gradient colors (from dark blue to bright cyan)
     colors = ["#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", ACCENT, "#7dd3fc", "#bae6fd"]
-    
+
     bar = ""
     for i in range(filled_len):
         # Pick color based on position
         color_idx = min(int((i / width) * len(colors)), len(colors) - 1)
         bar += f"[{colors[color_idx]}]█[/]"
-        
+
     bar += f"[{BG_ELEVATED}]{'█' * empty_len}[/]"
     return bar
 

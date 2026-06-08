@@ -5,8 +5,9 @@ Centralizes all tunable values so the rest of the codebase stays
 free of magic numbers and hardcoded paths.
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env file

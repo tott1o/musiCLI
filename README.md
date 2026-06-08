@@ -253,6 +253,9 @@ make run
 ```bash
 # Launch the application
 musicli
+
+# Alternatively, if the 'musicli' command is not recognized (e.g. PATH issues):
+python -m musicli.cli
 ```
 
 ---

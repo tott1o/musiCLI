@@ -7,7 +7,7 @@ indicators, and sorting by any column.
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -15,11 +15,14 @@ from textual.containers import Vertical
 from textual.message import Message
 from textual.widgets import DataTable, Static
 
-from ..utils import truncate
 from ..theme import (
-    ACCENT, FAVORITE, BG_PRIMARY, BG_ELEVATED, BG_HOVER,
-    TEXT_SECONDARY, TEXT_PRIMARY,
+    ACCENT,
+    BG_ELEVATED,
+    BG_PRIMARY,
+    FAVORITE,
+    TEXT_SECONDARY,
 )
+from ..utils import truncate
 
 if TYPE_CHECKING:
     from ..models import Song
@@ -106,11 +109,11 @@ class TrackList(Vertical):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self._songs: List[Song] = []
-        self._current_playing_path: Optional[str] = None
+        self._songs: list[Song] = []
+        self._current_playing_path: str | None = None
         self._view_title: str = "All Songs"
         self._favorites: set = set()
-        self._sort_key: Optional[str] = None
+        self._sort_key: str | None = None
         self._sort_reverse: bool = False
 
     def compose(self) -> ComposeResult:
@@ -143,24 +146,24 @@ class TrackList(Vertical):
 
     def update_tracks(
         self,
-        songs: List[Song],
+        songs: list[Song],
         title: str = "All Songs",
-        favorites: Optional[set] = None,
+        favorites: set | None = None,
     ) -> None:
         """Replace displayed songs with *songs*."""
         self._songs = list(songs)
         self._view_title = title
         if favorites is not None:
             self._favorites = favorites
-        
+
         # Reset scroll for new track list
         table = self.query_one("#tracks-table", DataTable)
         table.scroll_to(0, 0, animate=False)
-        
+
         self._refresh_table(reset_cursor=True)
         self._update_header()
 
-    def highlight_playing(self, song_path: Optional[str]) -> None:
+    def highlight_playing(self, song_path: str | None) -> None:
         """Mark the currently-playing track."""
         if self._current_playing_path == song_path:
             return
@@ -202,18 +205,18 @@ class TrackList(Vertical):
 
     def _refresh_table(self, reset_cursor: bool = False) -> None:
         table = self.query_one("#tracks-table", DataTable)
-        
+
         # Save state
         cursor_coord = table.cursor_coordinate
         scroll_x, scroll_y = table.scroll_offset
-        
+
         table.clear()
         for idx, song in enumerate(self._songs):
             # Styling title if it is currently playing
             title = truncate(song.display_title, 45)
             artist = truncate(song.display_artist, 30)
             album = truncate(song.display_album, 30)
-            
+
             status = " "
             if song.path == self._current_playing_path:
                 status = f"[bold {ACCENT}]▶[/]"
@@ -226,7 +229,7 @@ class TrackList(Vertical):
                     status = f"[{FAVORITE}]★[/]"
                 elif song.path in self._favorites:
                     status = f"[{FAVORITE}]♥[/]"
-            
+
             table.add_row(
                 status,
                 title,
@@ -235,7 +238,7 @@ class TrackList(Vertical):
                 song.duration_str,
                 key=f"t_{idx}_{song.path}",
             )
-            
+
         # Restore state
         if not reset_cursor and cursor_coord:
             row = min(cursor_coord.row, len(self._songs) - 1)
@@ -251,7 +254,7 @@ class TrackList(Vertical):
         path = raw_key.split("_", 2)[2] if raw_key.startswith("t_") else raw_key
         self.post_message(self.TrackSelected(path))
 
-    def _get_selected_path(self) -> Optional[str]:
+    def _get_selected_path(self) -> str | None:
         """Return the path of the currently-highlighted row."""
         table = self.query_one("#tracks-table", DataTable)
         try:

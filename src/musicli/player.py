@@ -7,11 +7,8 @@ Textual timer that calls ``tick()`` every ~500 ms.
 """
 
 import random
-import subprocess
-import os
-import signal
+from collections.abc import Callable
 from enum import Enum
-from typing import List, Optional, Callable
 
 import vlc
 
@@ -40,7 +37,7 @@ class MusicPlayer:
 
         # ── playback state ──────────────────────────────────────
         self._state: PlayerState = PlayerState.STOPPED
-        self._current_song: Optional[Song] = None
+        self._current_song: Song | None = None
         self._volume: float = 0.7
         self._seek_offset: float = 0.0      # position (s) we seeked to
         self._bass_boost: float = 0.0      # bass level (0.0 to 1.0)
@@ -52,24 +49,24 @@ class MusicPlayer:
         self._update_equalizer()
 
         # ── queue ───────────────────────────────────────────────
-        self._queue: List[Song] = []
+        self._queue: list[Song] = []
         self._queue_index: int = -1
-        self._original_queue: List[Song] = []   # pre-shuffle order
+        self._original_queue: list[Song] = []   # pre-shuffle order
 
         # ── modes ───────────────────────────────────────────────
         self._shuffle: bool = False
         self._repeat_mode: RepeatMode = RepeatMode.OFF
 
         # ── history ─────────────────────────────────────────────
-        self._history: List[Song] = []
+        self._history: list[Song] = []
 
         # ── error guard ─────────────────────────────────────────
         self._failed_attempts: int = 0
 
         # ── callbacks (set by the App) ──────────────────────────
-        self._on_track_change: Optional[Callable] = None
-        self._on_state_change: Optional[Callable] = None
-        self._on_pre_play: Optional[Callable] = None
+        self._on_track_change: Callable | None = None
+        self._on_state_change: Callable | None = None
+        self._on_pre_play: Callable | None = None
 
         self.set_volume(self._volume)
 
@@ -90,7 +87,7 @@ class MusicPlayer:
         return self._state == PlayerState.PAUSED
 
     @property
-    def current_song(self) -> Optional[Song]:
+    def current_song(self) -> Song | None:
         return self._current_song
 
     @property
@@ -118,7 +115,7 @@ class MusicPlayer:
         return self._repeat_mode
 
     @property
-    def queue(self) -> List[Song]:
+    def queue(self) -> list[Song]:
         return list(self._queue)
 
     @property
@@ -130,19 +127,19 @@ class MusicPlayer:
         """Current playback position in seconds."""
         if self._state == PlayerState.STOPPED:
             return 0.0
-        
+
         # VLC returns time in ms
         return self._vlc_player.get_time() / 1000.0
 
     @property
-    def history(self) -> List[Song]:
+    def history(self) -> list[Song]:
         return list(self._history)
 
     # ────────────────────────────────────────────────────────────
     #  Presets
     # ────────────────────────────────────────────────────────────
 
-    def get_presets(self) -> List[str]:
+    def get_presets(self) -> list[str]:
         """Return a list of available VLC equalizer preset names."""
         count = vlc.libvlc_audio_equalizer_get_preset_count()
         presets = []
@@ -159,7 +156,7 @@ class MusicPlayer:
         new_eq = vlc.libvlc_audio_equalizer_new_from_preset(index)
         if new_eq:
             self._equalizer = new_eq
-            
+
             # Extract approximate values for UI indicators (mapping -20..20dB to roughly 0..1.0)
             # We use representative bands for each zone: 60Hz (0), 1kHz (4), 16kHz (9)
             # We treat 0dB as 0.0 and 20dB as 1.0 (clamping cuts to 0 for the 'boost' bars)
@@ -171,7 +168,7 @@ class MusicPlayer:
                 self._bass_boost = 0.0
                 self._mid_gain = 0.0
                 self._treble_gain = 0.0
-            
+
             if self._vlc_player:
                 self._vlc_player.set_equalizer(self._equalizer)
 
@@ -181,9 +178,9 @@ class MusicPlayer:
 
     def set_callbacks(
         self,
-        on_track_change: Optional[Callable] = None,
-        on_state_change: Optional[Callable] = None,
-        on_pre_play: Optional[Callable] = None,
+        on_track_change: Callable | None = None,
+        on_state_change: Callable | None = None,
+        on_pre_play: Callable | None = None,
     ) -> None:
         self._on_track_change = on_track_change
         self._on_state_change = on_state_change
@@ -193,7 +190,7 @@ class MusicPlayer:
     #  Queue management
     # ────────────────────────────────────────────────────────────
 
-    def load_queue(self, songs: List[Song], start_index: int = 0) -> None:
+    def load_queue(self, songs: list[Song], start_index: int = 0) -> None:
         """Replace the play queue with *songs*, optionally starting at *start_index*."""
         self._original_queue = list(songs)
         if self._shuffle:
@@ -215,7 +212,7 @@ class MusicPlayer:
         insert_idx = self._queue_index + 1
         if insert_idx < 0:
             insert_idx = 0
-        
+
         self._queue.insert(insert_idx, song)
         self._original_queue.append(song)
 
@@ -242,7 +239,7 @@ class MusicPlayer:
         if 0 <= from_idx < len(self._queue) and 0 <= to_idx < len(self._queue):
             song = self._queue.pop(from_idx)
             self._queue.insert(to_idx, song)
-            
+
             # Sync original_queue if not shuffling
             if not self._shuffle:
                 if song in self._original_queue:
@@ -268,7 +265,7 @@ class MusicPlayer:
         if self._vlc_player:
             self._vlc_player.stop()
 
-    def play(self, song: Optional[Song] = None, start_pos: float = 0.0, force: bool = False) -> None:
+    def play(self, song: Song | None = None, start_pos: float = 0.0, force: bool = False) -> None:
         """
         Start playback.
 
@@ -304,11 +301,11 @@ class MusicPlayer:
             self._vlc_player.audio_set_volume(int(self._volume * 100))
             self._vlc_player.set_equalizer(self._equalizer)
             self._vlc_player.play()
-            
+
             # If there's a start position, seek after a short delay (vlc needs to buffer)
             if start_pos > 0:
                 self._vlc_player.set_time(int(start_pos * 1000))
-            
+
             self._seek_offset = start_pos
             self._state = PlayerState.PLAYING
             self._failed_attempts = 0
@@ -415,7 +412,7 @@ class MusicPlayer:
         """Seek to an absolute *position* in seconds."""
         if self._current_song is None or self._state == PlayerState.STOPPED:
             return
-        
+
         # Guard against seeking beyond duration if known
         if self._current_song.duration > 0:
             position = max(0.0, min(position, self._current_song.duration))
@@ -472,26 +469,26 @@ class MusicPlayer:
         """Apply audio settings to EQ bands."""
         # VLC EQ bands: 60Hz, 170Hz, 310Hz, 600Hz, 1kHz, 3kHz, 6kHz, 12kHz, 14kHz, 16kHz
         # Range: -20.0 to 20.0 dB
-        
+
         # Bass (Bands 0, 1, 2)
         bass_db = self._bass_boost * 20.0
         self._equalizer.set_amp_at_index(bass_db, 0)
         self._equalizer.set_amp_at_index(bass_db * 0.8, 1)
         self._equalizer.set_amp_at_index(bass_db * 0.4, 2)
-        
+
         # Mids (Bands 3, 4, 5)
         mid_db = self._mid_gain * 20.0
         self._equalizer.set_amp_at_index(mid_db * 0.5, 3)
         self._equalizer.set_amp_at_index(mid_db, 4)
         self._equalizer.set_amp_at_index(mid_db * 0.5, 5)
-        
+
         # Treble (Bands 6, 7, 8, 9)
         treble_db = self._treble_gain * 20.0
         self._equalizer.set_amp_at_index(treble_db * 0.3, 6)
         self._equalizer.set_amp_at_index(treble_db * 0.6, 7)
         self._equalizer.set_amp_at_index(treble_db, 8)
         self._equalizer.set_amp_at_index(treble_db, 9)
-        
+
         if self._vlc_player:
             self._vlc_player.set_equalizer(self._equalizer)
 
@@ -527,8 +524,8 @@ class MusicPlayer:
         """True when the current track has ended naturally."""
         if self._state != PlayerState.PLAYING:
             return False
-        
-        # VLC states: 6 is Ended, 7 is Error. 
+
+        # VLC states: 6 is Ended, 7 is Error.
         # We use .value for safer comparison across some binding versions.
         state = self._vlc_player.get_state().value
         return state in [6, 7] # vlc.State.Ended, vlc.State.Error

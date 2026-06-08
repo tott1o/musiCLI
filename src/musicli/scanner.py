@@ -7,15 +7,14 @@ and returns a clean list of Playlist objects.
 """
 
 from pathlib import Path
-from typing import List
 
 from tinytag import TinyTag
 
 from .config import SUPPORTED_FORMATS
-from .models import Song, Playlist
+from .models import Playlist, Song
 
 
-def scan_root_folder(root_path: str) -> List[Playlist]:
+def scan_root_folder(root_path: str) -> list[Playlist]:
     """
     Scan *root_path* for playlist folders and their audio files.
 
@@ -36,7 +35,7 @@ def scan_root_folder(root_path: str) -> List[Playlist]:
     if not root.exists() or not root.is_dir():
         return []
 
-    playlists: List[Playlist] = []
+    playlists: list[Playlist] = []
 
     # ── Songs directly in root → "Root" playlist ───────────────
     root_songs = _scan_directory(root, "Root")
@@ -55,7 +54,7 @@ def scan_root_folder(root_path: str) -> List[Playlist]:
     return playlists
 
 
-def get_all_songs(playlists: List[Playlist]) -> List[Song]:
+def get_all_songs(playlists: list[Playlist]) -> list[Song]:
     """Flatten all playlists into a single song list."""
     return [song for pl in playlists for song in pl.songs]
 
@@ -63,9 +62,9 @@ def get_all_songs(playlists: List[Playlist]) -> List[Song]:
 # ── Internal helpers ────────────────────────────────────────────
 
 
-def _scan_directory(directory: Path, playlist_name: str) -> List[Song]:
+def _scan_directory(directory: Path, playlist_name: str) -> list[Song]:
     """Return every readable audio file in *directory* (non-recursive)."""
-    songs: List[Song] = []
+    songs: list[Song] = []
     for fp in sorted(directory.iterdir()):
         if fp.is_file() and fp.suffix.lower() in SUPPORTED_FORMATS:
             song = _read_metadata(fp, playlist_name)

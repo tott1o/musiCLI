@@ -4,18 +4,22 @@ Audio Settings modal – Equalizer and Volume controls with Presets.
 
 from __future__ import annotations
 
-from typing import Optional, List
-
 from textual.app import ComposeResult
-from textual.containers import Vertical, Horizontal, Grid, Container
+from textual.containers import Grid, Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Static, Button
+from textual.widgets import Button, Static
 
-from ..utils import modern_bar
 from ..theme import (
-    ACCENT, BG_PRIMARY, BG_ELEVATED, BG_SURFACE, BG_BUTTON,
-    TEXT_PRIMARY, TEXT_SECONDARY, BORDER,
+    ACCENT,
+    BG_BUTTON,
+    BG_ELEVATED,
+    BG_PRIMARY,
+    BG_SURFACE,
+    BORDER,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
 )
+from ..utils import modern_bar
 
 
 class AudioSettingsModal(ModalScreen[None]):
@@ -159,13 +163,13 @@ class AudioSettingsModal(ModalScreen[None]):
         self.player = player
         self.preset_names = self.player.get_presets()
         # Filter popular presets
-        self.popular_indices = [0, 1, 11, 13, 3, 4, 17, 12] 
-        self.active_preset_idx: Optional[int] = None
+        self.popular_indices = [0, 1, 11, 13, 3, 4, 17, 12]
+        self.active_preset_idx: int | None = None
 
     def compose(self) -> ComposeResult:
         with Vertical(id="audio-container"):
             yield Static("AUDIO SETTINGS", id="audio-header")
-            
+
             with Horizontal(id="audio-body"):
                 # Left: Presets
                 with Vertical(id="presets-column"):
@@ -178,7 +182,7 @@ class AudioSettingsModal(ModalScreen[None]):
                 # Right: Fine Tuning
                 with Vertical(id="tuning-column"):
                     yield Static(" FINE TUNING ", classes="section-title")
-                    
+
                     # Volume
                     with Horizontal(classes="tuning-row"):
                         yield Static("VOL", classes="tuning-label")
@@ -222,19 +226,19 @@ class AudioSettingsModal(ModalScreen[None]):
         # Volume
         self.query_one("#tune-vol-bar", Static).update(modern_bar(self.player.volume, 18))
         self.query_one("#tune-vol-val", Static).update(f"{int(self.player.volume * 100)}%")
-        
+
         # Bass
         self.query_one("#tune-bass-bar", Static).update(modern_bar(self.player.bass_boost, 18))
         self.query_one("#tune-bass-val", Static).update(f"{int(self.player.bass_boost * 100)}%")
-        
+
         # Mids
         self.query_one("#tune-mid-bar", Static).update(modern_bar(self.player.mid_gain, 18))
         self.query_one("#tune-mid-val", Static).update(f"{int(self.player.mid_gain * 100)}%")
-        
+
         # Treble
         self.query_one("#tune-treble-bar", Static).update(modern_bar(self.player.treble_gain, 18))
         self.query_one("#tune-treble-val", Static).update(f"{int(self.player.treble_gain * 100)}%")
-        
+
         for idx in self.popular_indices:
             try:
                 btn = self.query_one(f"#preset-{idx}", Button)
@@ -254,11 +258,11 @@ class AudioSettingsModal(ModalScreen[None]):
         elif bid == "btn-cancel":
             self.dismiss()
             return
-            
+
         if not bid: return
-        
+
         step = 0.05
-        
+
         if bid.startswith("preset-"):
             idx = int(bid.split("-")[1])
             self.player.apply_preset(idx)
@@ -286,5 +290,5 @@ class AudioSettingsModal(ModalScreen[None]):
         elif bid == "treble-down":
             self.active_preset_idx = None
             self.player.set_treble_gain(self.player.treble_gain - step * 2)
-            
+
         self._update_all()

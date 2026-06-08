@@ -8,17 +8,15 @@ doubles as the queue view; this module only provides helper logic.
 
 from __future__ import annotations
 
-from typing import List, Optional
-
+from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
 from textual.message import Message
 from textual.widgets import DataTable, Static
 
-from ..utils import truncate
-
 from ..models import Song
-from ..theme import ACCENT, BG_PRIMARY, BG_HOVER, TEXT_SECONDARY
+from ..theme import ACCENT, BG_HOVER, BG_PRIMARY, TEXT_SECONDARY
+from ..utils import truncate
 
 
 class QueuePanel(Vertical):
@@ -103,12 +101,12 @@ class QueuePanel(Vertical):
 
     def update_queue(
         self,
-        queue: List[Song],
+        queue: list[Song],
         current_index: int = -1,
     ) -> None:
         """Refresh the queue display."""
         table = self.query_one("#queue-table", DataTable)
-        
+
         # Save state
         cursor_coord = table.cursor_coordinate
         scroll_x, scroll_y = table.scroll_offset
@@ -120,10 +118,10 @@ class QueuePanel(Vertical):
             playing = "▶" if idx == current_index else " "
             if idx > current_index:
                 upcoming += 1
-            
+
             title = truncate(song.display_title, 50)
             artist = truncate(song.display_artist, 40)
-            
+
             table.add_row(
                 playing,
                 str(idx + 1),

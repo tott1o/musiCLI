@@ -7,15 +7,19 @@ Premium edition with a clean layout and prominent progress bar.
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.containers import Vertical, Grid
+from textual.containers import Grid, Vertical
 from textual.widget import Widget
 from textual.widgets import Static
 
-from ..utils import format_duration, volume_bar, make_progress_bar
 from ..theme import (
-    ACCENT, WARNING, BG_PRIMARY, BG_BUTTON_DIM, TEXT_PRIMARY,
+    ACCENT,
+    BG_BUTTON_DIM,
+    BG_PRIMARY,
+    TEXT_PRIMARY,
     TEXT_SECONDARY,
+    WARNING,
 )
+from ..utils import format_duration, make_progress_bar, volume_bar
 
 
 class NowPlayingBar(Widget):
@@ -106,7 +110,7 @@ class NowPlayingBar(Widget):
                 yield Static("STOPPED", id="np-status-tag")
                 yield Static("No track loaded", id="np-track-name")
                 yield Static("", id="np-artist-name")
-            
+
             # Center
             with Vertical(id="np-performance-bay"):
                 yield Static("", id="np-progress")
@@ -133,7 +137,7 @@ class NowPlayingBar(Widget):
         bass: float = 0.0,
     ) -> None:
         """Refresh every element of the premium now-playing bar."""
-        
+
         # 1. Left: Info Bay
         status_tag = self.query_one("#np-status-tag", Static)
         if is_playing:
@@ -159,16 +163,16 @@ class NowPlayingBar(Widget):
         time_cur = format_duration(position)
         time_tot = format_duration(duration)
         time_row.update(f"[bold {TEXT_PRIMARY}]{time_cur}[/]  [dim]/  {time_tot}[/]")
-        
+
         progress_label = self.query_one("#np-progress", Static)
-        
+
         # Calculate a responsive width for the progress bar
         bar_width = 30
         if self.size.width > 100:
             bar_width = 40
         elif self.size.width < 60:
             bar_width = 20
-            
+
         bar = make_progress_bar(position, duration, width=bar_width)
         progress_label.update(bar)
 
@@ -181,7 +185,7 @@ class NowPlayingBar(Widget):
             "one": f"[{WARNING}]REP-ONE[/]",
         }
         rep = rep_map.get(repeat, "[dim]REPEAT[/dim]")
-        
+
         modes_label.update(f"{shuf}  |  {rep}")
 
         vol_label = self.query_one("#np-volume-container", Static)

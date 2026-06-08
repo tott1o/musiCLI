@@ -7,20 +7,21 @@ and saved libraries (previously accessed root folders).
 
 from __future__ import annotations
 
-from typing import List
-
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
 from textual.message import Message
-from textual.widgets import Static, OptionList
+from textual.widgets import OptionList, Static
 from textual.widgets.option_list import Option
 
-from ..utils import truncate
 from ..theme import (
-    ACCENT, BG_DEEPEST, BG_ELEVATED, BG_HIGHLIGHT, BORDER,
-    TEXT_SECONDARY,
+    ACCENT,
+    BG_DEEPEST,
+    BG_ELEVATED,
+    BG_HIGHLIGHT,
+    BORDER,
 )
+from ..utils import truncate
 
 
 class Sidebar(Vertical):
@@ -133,15 +134,15 @@ class Sidebar(Vertical):
 
     def set_libraries(
         self,
-        saved_roots: List[dict] | None = None,
+        saved_roots: list[dict] | None = None,
         current_root: str = "",
-        youtube_playlists: List[str] | None = None,
+        youtube_playlists: list[str] | None = None,
     ) -> None:
         """Rebuild the sidebar list with saved libraries and YT playlists."""
         self._saved_roots_data = saved_roots or []  # Store for lookup
         self._youtube_playlists = youtube_playlists or []
         nav = self.query_one("#nav-list", OptionList)
-        
+
         # Remember what was highlighted
         highlighted_id = None
         if nav.highlighted is not None:
@@ -172,24 +173,24 @@ class Sidebar(Vertical):
 
         # Libraries
         nav.add_option(Option("  LIBRARIES", id="_label_libraries", disabled=True))
-        
+
         # Sort libraries alphabetically for a "still" UI
         sorted_roots = sorted(self._saved_roots_data, key=lambda x: x.get("name", "").lower())
-        
+
         if sorted_roots:
             for root in sorted_roots:
                 name = root.get("name", "Unknown")
                 path = root.get("path", "")
-                
+
                 # Truncate library name if it's too long for the sidebar
                 display_name = truncate(name, 22)
-                
+
                 # Use a different icon/style for the current active library
                 if path == current_root:
                     label = f"  [bold {ACCENT}]● {display_name}[/]"
                 else:
                     label = f"    {display_name}"
-                
+
                 nav.add_option(Option(label, id=f"library:{path}"))
 
         # Add Library button

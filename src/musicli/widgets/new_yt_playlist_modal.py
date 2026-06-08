@@ -7,13 +7,17 @@ from __future__ import annotations
 from typing import Optional
 
 from textual.app import ComposeResult
-from textual.containers import Vertical, Horizontal
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Input, Static, Button
+from textual.widgets import Button, Input, Static
 
 from ..theme import (
-    YT_ACCENT, BG_ELEVATED, BG_SURFACE, BORDER,
-    TEXT_PRIMARY, TEXT_SECONDARY,
+    BG_ELEVATED,
+    BG_SURFACE,
+    BORDER,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
+    YT_ACCENT,
 )
 
 

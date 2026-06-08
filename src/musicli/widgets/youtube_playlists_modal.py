@@ -4,18 +4,20 @@ Modal for adding a YouTube song to a playlist.
 
 from __future__ import annotations
 
-from typing import List
-
-from textual.app import ComposeResult
-from textual.containers import Vertical, Horizontal
-from textual.screen import ModalScreen
-from textual.widgets import Button, Static, OptionList, Input
-from textual.widgets.option_list import Option
 from textual import on
+from textual.app import ComposeResult
+from textual.containers import Horizontal, Vertical
+from textual.screen import ModalScreen
+from textual.widgets import Button, Input, OptionList, Static
+from textual.widgets.option_list import Option
 
 from ..theme import (
-    YT_ACCENT, BG_ELEVATED, BG_SURFACE, BORDER,
-    TEXT_PRIMARY, TEXT_SECONDARY,
+    BG_ELEVATED,
+    BG_SURFACE,
+    BORDER,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
+    YT_ACCENT,
 )
 
 
@@ -96,7 +98,7 @@ class YoutubePlaylistModal(ModalScreen[str]):
 
     def __init__(
         self,
-        playlists: List[str],
+        playlists: list[str],
         song_title: str = "",
         **kwargs
     ) -> None:
@@ -106,16 +108,16 @@ class YoutubePlaylistModal(ModalScreen[str]):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="yt-playlist-panel"):
-            yield Static(f"Add to Playlist", id="yt-playlist-title")
+            yield Static("Add to Playlist", id="yt-playlist-title")
             yield Static(f"[italic]{self.song_title}[/]", id="yt-song-title")
-            
+
             yield OptionList(
                 *[Option(f"  {p}", id=p) for p in self.playlists],
                 id="yt-playlist-list"
             )
-            
+
             yield Input(placeholder="Or create new playlist...", id="yt-new-playlist-input")
-            
+
             with Horizontal(id="yt-playlist-buttons"):
                 yield Button("Cancel", id="btn-cancel")
 

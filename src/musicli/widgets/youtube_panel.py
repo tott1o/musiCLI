@@ -6,20 +6,18 @@ from __future__ import annotations
 
 import socket
 import threading
-from typing import List, Optional
 
-from textual import events, on
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical, Horizontal
+from textual.containers import Horizontal, Vertical
 from textual.message import Message
-from textual.widgets import DataTable, Static, Input, Button, LoadingIndicator
+from textual.widgets import Button, DataTable, Input, LoadingIndicator, Static
 
-from ..utils import truncate
-
+from ..config import YOUTUBE_COOKIES_FILE, YOUTUBE_COOKIES_FROM_BROWSER, YOUTUBE_SEARCH_LIMIT
 from ..models import Song
-from ..config import YOUTUBE_COOKIES_FROM_BROWSER, YOUTUBE_COOKIES_FILE, YOUTUBE_SEARCH_LIMIT
-from ..theme import YT_ACCENT, FAVORITE, BG_PRIMARY, BG_HOVER, TEXT_SECONDARY
+from ..theme import BG_HOVER, BG_PRIMARY, FAVORITE, TEXT_SECONDARY, YT_ACCENT
+from ..utils import truncate
 
 try:
     import yt_dlp
@@ -106,14 +104,14 @@ class YoutubePanel(Vertical):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self._results: List[Song] = []
+        self._results: list[Song] = []
         self._is_searching: bool = False
-        self._current_playing_path: Optional[str] = None
-        self._starred_paths: List[str] = []
+        self._current_playing_path: str | None = None
+        self._starred_paths: list[str] = []
         self._current_query: str = ""
         self._search_offset: int = 0
 
-    def set_starred(self, paths: List[str]) -> None:
+    def set_starred(self, paths: list[str]) -> None:
         """Update the list of starred YouTube paths."""
         self._starred_paths = paths
         if self._results:
@@ -150,7 +148,7 @@ class YoutubePanel(Vertical):
 
         # Always reset offset when submitting a search via Enter
         # unless we explicitly want "Enter on same query = Next"
-        # The user said "it should be reset after enter search", 
+        # The user said "it should be reset after enter search",
         # implying Enter should start fresh.
         self._current_query = query
         self._search_offset = 0
@@ -179,7 +177,7 @@ class YoutubePanel(Vertical):
         self._is_searching = True
         self.query_one("#yt-loading").display = True
         self.query_one("#yt-table").display = False
-        
+
         msg = f"Searching for '{query}'..."
         if offset > 0:
             msg = f"Searching for '{query}' (Results {offset + 1}-{offset + YOUTUBE_SEARCH_LIMIT})..."
@@ -224,19 +222,19 @@ class YoutubePanel(Vertical):
             'playliststart': offset + 1,
             'playlistend': offset + YOUTUBE_SEARCH_LIMIT,
         }
-        
+
         if YOUTUBE_COOKIES_FROM_BROWSER:
             ydl_opts['cookiesfrombrowser'] = (YOUTUBE_COOKIES_FROM_BROWSER,)
         elif YOUTUBE_COOKIES_FILE:
             ydl_opts['cookiefile'] = YOUTUBE_COOKIES_FILE
-        
+
         results = []
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 # search for results - using 1000 as a large limit for pagination
                 search_query = f"ytsearch1000:{query}"
                 info = ydl.extract_info(search_query, download=False)
-                
+
                 if 'entries' in info:
                     for entry in info['entries']:
                         if not entry: continue
@@ -280,7 +278,7 @@ class YoutubePanel(Vertical):
 
         self.app.call_from_thread(self._finish_search, results)
 
-    def highlight_playing(self, song_path: Optional[str]) -> None:
+    def highlight_playing(self, song_path: str | None) -> None:
         """Mark the currently-playing track in the search results."""
         if self._current_playing_path == song_path:
             return
@@ -291,7 +289,7 @@ class YoutubePanel(Vertical):
     def _refresh_table(self) -> None:
         """Refresh the results table with current highlighting."""
         table = self.query_one("#yt-table", DataTable)
-        
+
         # Save state
         cursor_coord = table.cursor_coordinate
         scroll_x, scroll_y = table.scroll_offset
@@ -301,7 +299,7 @@ class YoutubePanel(Vertical):
             status = " "
             title = truncate(song.display_title, 50)
             artist = truncate(song.display_artist, 40)
-            
+
             if song.path == self._current_playing_path:
                 status = f"[bold {YT_ACCENT}]▶[/]"
                 title = f"[bold {YT_ACCENT}]{title}[/]"
@@ -342,22 +340,22 @@ class YoutubePanel(Vertical):
         # Actually, let's just let the app handle it.
         pass
 
-    def _finish_search(self, results: List[Song]) -> None:
+    def _finish_search(self, results: list[Song]) -> None:
         self._is_searching = False
         self._results = results
-        
+
         self.query_one("#yt-loading").display = False
         self.query_one("#yt-table").display = True
-        
+
         self._refresh_table()
-        
+
         if not results:
             self.query_one("#yt-info").update("No more results found.")
         else:
             start = self._search_offset + 1
             end = self._search_offset + len(results)
             self.query_one("#yt-info").update(f"Showing results {start}-{end} for '{self._current_query}'")
-        
+
         table = self.query_one("#yt-table", DataTable)
         table.focus()
 
@@ -368,7 +366,7 @@ class YoutubePanel(Vertical):
             if 0 <= idx < len(self._results):
                 self.post_message(self.YoutubeTrackSelected(self._results[idx]))
 
-    def get_selected_song(self) -> Optional[Song]:
+    def get_selected_song(self) -> Song | None:
         """Return the song currently highlighted in the table."""
         table = self.query_one("#yt-table", DataTable)
         try:
