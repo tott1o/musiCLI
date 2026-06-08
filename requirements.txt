@@ -1,0 +1,16 @@
+# This file is maintained for backward compatibility.
+# The canonical dependency list is in pyproject.toml.
+#
+# Install with: pip install .
+# Or for development: pip install -e ".[dev]"
+
+textual>=0.80.0
+pygame>=2.5.0
+tinytag>=1.10.0
+yt-dlp
+python-vlc
+textual-image
+syncedlyrics
+requests
+Pillow
+python-dotenv

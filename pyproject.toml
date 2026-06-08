@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "musicli"
+version = "1.0.0"
+description = "A feature-rich, Spotify-inspired terminal music player."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "tott1o", email = "tott1o@users.noreply.github.com"},
+]
+keywords = ["music", "player", "terminal", "cli", "tui", "spotify", "textual"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Players",
+]
+dependencies = [
+    "textual>=0.80.0",
+    "pygame>=2.5.0",
+    "tinytag>=1.10.0",
+    "yt-dlp",
+    "python-vlc",
+    "textual-image",
+    "syncedlyrics",
+    "requests",
+    "Pillow",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+musicli = "musicli.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/tott1o/musiCLI"
+Repository = "https://github.com/tott1o/musiCLI"
+Issues = "https://github.com/tott1o/musiCLI/issues"
+Changelog = "https://github.com/tott1o/musiCLI/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/musicli"]
+
+[tool.ruff]
+src = ["src"]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

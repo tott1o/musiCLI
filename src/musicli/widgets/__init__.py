@@ -1,0 +1,1 @@
+"""MusiCLI UI Widgets."""
